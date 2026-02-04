@@ -11,7 +11,6 @@ namespace Business.Abstract
 {
     public interface IRealEstateService
     {
-        IDataResult<List<RealEstate>> GetAll();
 
         IDataResult<List<RealEstate>> GetAllByNeighborhoodId(int id);
         IDataResult<List<RealEstate>> GetAllByDistrictId(int id);
@@ -22,5 +21,7 @@ namespace Business.Abstract
         IResult Delete(RealEstateDeleteDto realEstateDeleteDto);
 
         IDataResult<List<RealEstate>> GetByFilter(RealEstateFilterDto realEstateFilterDto);
+
+        IDataResult<List<RealEstate>> GetAllByRole(int userId, string role);
     }
 }

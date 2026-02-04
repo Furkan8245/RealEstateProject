@@ -24,5 +24,26 @@ namespace Business.Constants
         public static string CityUpdated = "Şehir başarıyla güncellendi";
         public static string CityNotFound = "Şehir bulunamadı";
         public static string CityListed = "Şehirler Listelendi";
+        public static string UserUpdated = "Kullanıcı güncellendi";
+        public static string DistrictAdded = "İlçe Eklendi";
+        public static string DistrictUpdated = "İlçe Güncellendi";
+        public static string DistrictDeleted = "İlçe Silindi.";
+        public static string DistrictNotFound = "İlçe Bulunamadı.";
+        public static string DistrictListed = "İlçe Bulunamadı.";
+        public static string NeighborhoodListed = "Mahalle Listelendi.";
+        public static string NeighborhoodAdded = "Mahalle Eklendi.";
+        public static string NeighborhoodUpdated = "Mahalle Güncellendi.";
+        public static string NeighborhoodDeleted = "Mahalle Güncellendi.";
+        public static string NeighborhoodNotFound = "Mahalle Güncellendi.";
+        public static string LogMessage = "Veritabanına loglandı.";
+        public static string FileLogMessage = "Dosyaya loglandı.";
+        public static string AuditLogError = "Hiçbir kayıt kriterlere uymamaktadır.";
+
+
+
+
+
+
+
     }
 }

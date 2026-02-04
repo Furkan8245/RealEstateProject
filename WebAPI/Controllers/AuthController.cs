@@ -19,9 +19,9 @@ namespace WebAPI.Controllers
         public IActionResult Login(UserForLoginDto userForLoginDto)
         {
             var value = _authService.Login(userForLoginDto);
-            if (value.Success)
+            if (!value.Success)
             {
-                return Ok(value);
+                return BadRequest(value.Message);
             }
             var result = _authService.CreateAccessToken(value.Data);
             if (result.Success)

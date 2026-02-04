@@ -1,48 +1,48 @@
 ﻿using Business.Abstract;
+using Business.Constants;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
-using Entities.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Business.Concrete
 {
     public class NeighborhoodManager : INeighborhoodService
     {
-        private readonly INeighborhoodDal _neighborhoodDal;
+        INeighborhoodDal _neighborhoodDal;
 
         public NeighborhoodManager(INeighborhoodDal neighborhoodDal)
         {
             _neighborhoodDal = neighborhoodDal;
         }
 
-        public IResult Add(NeighborhoodAddDto neighborhoodAddDto)
+        public IResult Add(Neighborhood neighborhood)
         {
-            var neighborhood = new Neighborhood
+            var value = new Neighborhood
             {
-                NeighborhoodName = neighborhoodAddDto.Name,
-                DistrictId=neighborhoodAddDto.DistrictId
+                NeighborhoodName = neighborhood.NeighborhoodName,
+                DistrictId=neighborhood.DistrictId
             };
             _neighborhoodDal.Add(neighborhood);
-            return new SuccessResult("Mahalle başarıyla eklendi");
+            return new SuccessResult(Messages.NeighborhoodAdded);
         }
 
-        public IResult Delete(NeighborhoodDeleteDto neighborhoodDeleteDto)
+        public IResult Delete(int id)
         {
-            var response = _neighborhoodDal.Get(n => n.NeighborhoodId == neighborhoodDeleteDto.Id);
-            if (response == null)
-                return new ErrorResult("Silmek istediğiniz mahalle bulunamadı.");
+            var response = _neighborhoodDal.Get(n => n.NeighborhoodId == id);
             _neighborhoodDal.Delete(response);
-            return new SuccessResult("Mahalle silindi.");
+            return new SuccessResult(Messages.NeighborhoodDeleted);
+        }
+
+        public IResult Exists(int id)
+        {
+            var response = _neighborhoodDal.Get(e => e.NeighborhoodId == id);
+            if (response != null) return new SuccessResult();
+            return new ErrorResult(Messages.NeighborhoodNotFound);
         }
 
         public IDataResult<List<Neighborhood>> GetAll()
         {
-            return new SuccessDataResult<List<Neighborhood>>(_neighborhoodDal.GetAll(),"Mahalleler listelendi");
+            return new SuccessDataResult<List<Neighborhood>>(_neighborhoodDal.GetAll(),Messages.NeighborhoodListed);
         }
 
         public IDataResult<List<Neighborhood>> GetAllByDistrictId(int districtId)
@@ -55,9 +55,10 @@ namespace Business.Concrete
             return new SuccessDataResult<Neighborhood>(_neighborhoodDal.Get(n => n.NeighborhoodId == neighborhoodId));
         }
 
-        public IResult Update(NeighborhoodUpdateDto neighborhoodUpdateDto)
+        public IResult Update(Neighborhood neighborhood)
         {
-            throw new NotImplementedException();
+            _neighborhoodDal.Update(neighborhood);
+            return new SuccessResult(Messages.NeighborhoodUpdated);
         }
     }
 }

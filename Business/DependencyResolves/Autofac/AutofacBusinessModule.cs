@@ -25,7 +25,15 @@ namespace Business.DependencyResolves.Autofac
             containerBuilder.RegisterType<EfNeighborhoodDal>().As<INeighborhoodDal>().SingleInstance();
             containerBuilder.RegisterType<NeighborhoodManager>().As<INeighborhoodService>().SingleInstance();
 
-            containerBuilder.RegisterType<RealEstateContext>().AsSelf().InstancePerLifetimeScope();
+            //containerBuilder.RegisterType<RealEstateContext>().AsSelf().InstancePerLifetimeScope();
+            containerBuilder.RegisterType<EfCityDal>().As<ICityDal>().SingleInstance();
+            containerBuilder.RegisterType<CityManager>().As<ICityService>().SingleInstance();
+
+            containerBuilder.RegisterType<DistrictManager>().As<IDistrictService>().SingleInstance();
+            containerBuilder.RegisterType<EfDistrictDal>().As<IDistrictDal>().SingleInstance();
+
+            containerBuilder.RegisterType<AuditLogManager>().As<IAuditLogService>().SingleInstance();
+            containerBuilder.RegisterType<EfAuditLogDal>().As<IAuditLogDal>().SingleInstance();
 
             var assembly = Assembly.GetExecutingAssembly();
             containerBuilder.RegisterAssemblyTypes(assembly).AsImplementedInterfaces()

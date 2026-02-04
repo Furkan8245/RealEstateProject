@@ -17,8 +17,8 @@ namespace Entities.DTOs
         public string Address { get; set; }
         public int PropertyTypeId { get; set; }
         public int OwnerId { get; set; }
-        public int CoordinateX { get; set; }
-        public int CoordinateY { get; set; }
+        public double CoordinateX { get; set; }
+        public double CoordinateY { get; set; }
 
     }
 }

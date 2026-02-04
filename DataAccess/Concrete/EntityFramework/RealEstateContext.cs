@@ -12,6 +12,9 @@ namespace DataAccess.Concrete.EntityFramework
     //Context:Db tabloları ile proje classlarını bağlamak
     public class RealEstateContext:DbContext
     {
+        public RealEstateContext(DbContextOptions<RealEstateContext> options):base(options) 
+        {
+        }
         public RealEstateContext()
         {
         }
@@ -28,7 +31,11 @@ namespace DataAccess.Concrete.EntityFramework
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Host=localhost;Database=ReDatabase;Username=postgres;Password=1905", d => d.UseNetTopologySuite());
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseNpgsql("Host=localhost;Database=ReDatabase;Username=postgres;Password=1905", d => d.UseNetTopologySuite());
+            }
+            
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -44,8 +51,14 @@ namespace DataAccess.Concrete.EntityFramework
 
             modelBuilder.Entity<User>(entity =>
             {
+                
                 entity.Property(u => u.PasswordHash).HasColumnType("bytea");
                 entity.Property(u => u.PasswordSalt).HasColumnType("bytea");
+            });
+
+            modelBuilder.Entity<RealEstate>(entity =>
+            {
+                entity.Property(e => e.Location).HasColumnType("geometry(Point,4326)");
             });
 
 

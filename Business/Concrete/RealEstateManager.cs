@@ -8,6 +8,9 @@ using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
 using Entities.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,10 +20,11 @@ namespace Business.Concrete
     public class RealEstateManager : IRealEstateService
     {
         private readonly IRealEstateDal _realEstateDal;
-
+        private readonly GeometryFactory _geometryFactory;
         public RealEstateManager(IRealEstateDal realEstateDal)
         {
             _realEstateDal = realEstateDal;
+            _geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
         }
 
         [ValidationAspect(typeof(RealEstateValidator))]
@@ -36,17 +40,16 @@ namespace Business.Concrete
 
             var realEstate = new RealEstate
             {
-                UserId = realEstateAddDto.OwnerId, 
+                UserId = realEstateAddDto.OwnerId,
                 CityId = realEstateAddDto.CityId,
                 DistrictId = realEstateAddDto.DistrictId,
                 NeighborhoodId = realEstateAddDto.NeighborhoodId,
                 PropertyId = realEstateAddDto.PropertyTypeId,
                 ParcelNumber = realEstateAddDto.ParcelNumber,
                 LotNumber = realEstateAddDto.LotNumber,
-                Location = new NetTopologySuite.Geometries.Point(realEstateAddDto.CoordinateX,realEstateAddDto.CoordinateY)
-                {
-                    SRID=2436
-                }
+                Location = _geometryFactory.CreatePoint(new Coordinate(realEstateAddDto.CoordinateX,
+                realEstateAddDto.CoordinateY))
+
             };
 
             _realEstateDal.Add(realEstate);
@@ -66,11 +69,7 @@ namespace Business.Concrete
             return new SuccessResult(Messages.RealEstateDeleted);
         }
 
-        [CacheAspect]
-        public IDataResult<List<RealEstate>> GetAll()
-        {
-            return new SuccessDataResult<List<RealEstate>>(_realEstateDal.GetAll(),Messages.RealEstateListed);
-        }
+      
 
         public IDataResult<List<RealEstate>> GetAllByDistrictId(int id)
         {
@@ -100,7 +99,8 @@ namespace Business.Concrete
             isThere.ParcelNumber = realEstateUpdateDto.ParcelNumber;
             isThere.LotNumber = realEstateUpdateDto.LotNumber;
             isThere.PropertyId = realEstateUpdateDto.PropertyTypeId;
-            isThere.Location = new NetTopologySuite.Geometries.Point(realEstateUpdateDto.CoordinateX, realEstateUpdateDto.CoordinateY);
+            isThere.Location = _geometryFactory.CreatePoint(
+                new Coordinate(realEstateUpdateDto.CoordinateX, realEstateUpdateDto.CoordinateY));
 
             _realEstateDal.Update(isThere);
             return new SuccessResult(Messages.RealEstateUpdated);
@@ -122,6 +122,16 @@ namespace Business.Concrete
             var result = _realEstateDal.GetAll(r => r.LotNumber == lot && r.ParcelNumber == parcel).Any();
             if (result) return new ErrorResult(Messages.IsThereParcelAndLotNumber);
             return new SuccessResult();
+        }
+        [CacheAspect]
+        public IDataResult<List<RealEstate>> GetAllByRole(int userId, string role)
+        {
+            if (role=="Admin")
+            {
+                return new SuccessDataResult<List<RealEstate>>(_realEstateDal.GetAll(), Messages.RealEstateListed);
+            }
+            var result =_realEstateDal.GetAll(r=>r.UserId==userId);
+                return new SuccessDataResult<List<RealEstate>>(result, Messages.RealEstateListed);
         }
     }
 }

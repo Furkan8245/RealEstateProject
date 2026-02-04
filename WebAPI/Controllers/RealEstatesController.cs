@@ -2,6 +2,7 @@
 using Entities.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace WebAPI.Controllers
 {
@@ -16,9 +17,11 @@ namespace WebAPI.Controllers
             _realEstateService = realEstateService;
         }
         [HttpGet("getall")]
-        public IActionResult GetAll()
+        public IActionResult GetAllByRole()
         {
-            var value=_realEstateService.GetAll();
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var role= User.FindFirst(ClaimTypes.Role)?.Value;
+            var value=_realEstateService.GetAllByRole(userId,role);
             if (value.Success)
             {
                 return Ok(value);

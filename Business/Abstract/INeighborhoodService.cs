@@ -14,10 +14,10 @@ namespace Business.Abstract
         IDataResult<List<Neighborhood>> GetAll();
         IDataResult<Neighborhood> GetById(int neighborhoodId);
         IDataResult<List<Neighborhood>> GetAllByDistrictId(int districtId);
-
-        IResult Add(NeighborhoodAddDto neighborhoodAddDto);
-        IResult Update(NeighborhoodUpdateDto neighborhoodUpdateDto);
-        IResult Delete(NeighborhoodDeleteDto neighborhoodDeleteDto);
+        IResult Add(Neighborhood neighborhood);
+        IResult Update(Neighborhood neighborhood);
+        IResult Delete(int id);
+        IResult Exists(int id);
 
 
 
