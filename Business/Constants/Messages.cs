@@ -38,10 +38,14 @@ namespace Business.Constants
         public static string LogMessage = "Veritabanına loglandı.";
         public static string FileLogMessage = "Dosyaya loglandı.";
         public static string AuditLogError = "Hiçbir kayıt kriterlere uymamaktadır.";
-
-
-
-
+        public static string OperationTypeArea = "Geçersiz operayon tipi";
+        public static string AreaProcess = "İşlem sonucu boş(Bir kesişim bulunamadı)";
+        public static string NewAnalysis = "Yeni Analiz Kontrolü";
+        public static string SuccessAnalysis = "Yeni Analiz Kontrolü";
+        public static string IntersectionNoSave = "Kesişim hesaplandı(Kaydedilmedi).";
+        public static string RecordNotFound = "Aranılan kayıt bulunamadı";
+        public static string DeleteAnaliysis = "Aranılan kayıt bulunamadı";
+        public static string AreaAnalysisUpdate = "Alan analizi güncellemesi başarılı.";
 
 
 
