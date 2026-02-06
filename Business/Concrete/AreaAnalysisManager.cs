@@ -15,7 +15,7 @@ namespace Business.Concrete
 {
     public class AreaAnalysisManager : IAnalysisService
     {
-        private readonly IAreaAnalysisDal _areaAnalysisDal
+        private readonly IAreaAnalysisDal _areaAnalysisDal;
 public AreaAnalysisManager(IAreaAnalysisDal areaAnalysisDal)
         {
             _areaAnalysisDal = areaAnalysisDal;
@@ -85,7 +85,7 @@ public AreaAnalysisManager(IAreaAnalysisDal areaAnalysisDal)
 
         public IResult Update(AreaAnalysisUpdateDto areaAnalysisUpdateDto)
         {
-            var value = _areaAnalysisDal.Get(a => a.Id = areaAnalysisUpdateDto.Id);
+            var value = _areaAnalysisDal.Get(a => a.Id == areaAnalysisUpdateDto.Id);
             if (value == null)
                 return new ErrorResult(Messages.RecordNotFound);
             value.Name = areaAnalysisUpdateDto.Name;

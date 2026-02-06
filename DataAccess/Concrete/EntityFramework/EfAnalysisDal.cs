@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace DataAccess.Concrete.EntityFramework
 {
     public class EfAnalysisDal
-        : EfEntityRepositoryBase<AreaAnalysis, RealEstateContext>, IRealEstateDal
+        : EfEntityRepositoryBase<AreaAnalysis, RealEstateContext>, IAreaAnalysisDal
     {
         public EfAnalysisDal(RealEstateContext context) : base(context)
         {
