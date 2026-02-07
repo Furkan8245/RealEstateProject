@@ -35,6 +35,9 @@ namespace Business.DependencyResolves.Autofac
             containerBuilder.RegisterType<AuditLogManager>().As<IAuditLogService>().SingleInstance();
             containerBuilder.RegisterType<EfAuditLogDal>().As<IAuditLogDal>().SingleInstance();
 
+            containerBuilder.RegisterType<AreaAnalysisManager>().As<IAnalysisService>().SingleInstance();
+            containerBuilder.RegisterType<EfAnalysisDal>().As<IAreaAnalysisDal>().SingleInstance();
+
             var assembly = Assembly.GetExecutingAssembly();
             containerBuilder.RegisterAssemblyTypes(assembly).AsImplementedInterfaces()
                 .EnableInterfaceInterceptors(new ProxyGenerationOptions

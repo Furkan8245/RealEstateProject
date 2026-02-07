@@ -13,7 +13,7 @@ namespace Business.Abstract
     {
         IDataResult<AreaAnalysis> CalculateAndSave(AreaAnalysisDto areaAnalysisDto);
 
-        IResult Delete(int id);
+        IResult Delete(AreaAnalysisDeleteDto analysisDeleteDto);
         IResult Update(AreaAnalysisUpdateDto areaAnalysisUpdateDto);
         IDataResult<List<AreaAnalysis>> GetAll();
         IDataResult<AreaAnalysis> GetById(int id);

@@ -27,6 +27,8 @@ namespace DataAccess.Concrete.EntityFramework
         public DbSet<User> Users { get; set; }
         public DbSet<OperationClaim> OperationClaims { get; set; }
         public DbSet<UserOperationClaim> UserOperationClaims { get; set; }
+        public DbSet<AreaAnalysis> AreaAnalyses{ get; set; }
+
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -48,6 +50,7 @@ namespace DataAccess.Concrete.EntityFramework
             modelBuilder.Entity<Neighborhood>().ToTable("neighborhoods");
             modelBuilder.Entity<OperationClaim>().ToTable("operationclaims");
             modelBuilder.Entity<UserOperationClaim>().ToTable("useroperationclaims");
+            modelBuilder.Entity<AreaAnalysis>().ToTable("areaanalyses");
 
             modelBuilder.Entity<User>(entity =>
             {
@@ -55,9 +58,15 @@ namespace DataAccess.Concrete.EntityFramework
                 entity.Property(u => u.PasswordHash).HasColumnType("bytea");
                 entity.Property(u => u.PasswordSalt).HasColumnType("bytea");
             });
+            modelBuilder.Entity<AreaAnalysis>(entity =>
+            {
+                entity.ToTable("areaanalyses");
+                entity.Property(e => e.Geometry).HasColumnType("geometry(Geometry,4326)");
+            }); 
 
             modelBuilder.Entity<RealEstate>(entity =>
             {
+                entity.ToTable("realestates");
                 entity.Property(e => e.Location).HasColumnType("geometry(Point,4326)");
             });
 

@@ -11,9 +11,9 @@ namespace Business.Constants
     {
         public static string RealEstateAdded = "Taşınmaz başarıyla eklendi";
         public static string RealEstateNameInvalid = "Geçersiz taşınmaz ismi";
-        public static string NoRealEstate= "Taşınmaz bulunamadı";
+        public static string NoRealEstate = "Taşınmaz bulunamadı";
         public static string RealEstateDeleted = "Taşınmaz başarıyla silindi";
-        public static string NoRealEstateUpdated= "Güncellenecek taşınmaz bulunamadı";
+        public static string NoRealEstateUpdated = "Güncellenecek taşınmaz bulunamadı";
         public static string RealEstateUpdated = "Taşınmaz başarıyla güncellendi";
         public static string IsThereParcelAndLotNumber = "Bu parsel ve ada numarasına sahip taşınmaz zaten mevcut";
         public static string RealEstateListed = "Taşınmazlar ilçeye göre listelendi";
@@ -46,8 +46,13 @@ namespace Business.Constants
         public static string RecordNotFound = "Aranılan kayıt bulunamadı";
         public static string DeleteAnaliysis = "Aranılan kayıt bulunamadı";
         public static string AreaAnalysisUpdate = "Alan analizi güncellemesi başarılı.";
-
-
-
+        public static string MissingProcess = "Lütfen A, B ve C geometrilerini tamamlayın.";
+        public static string AnalysisMessage = "Analiz Sonucu";
+        public static string UnionAB = "Geometry D";
+        public static string UnionABC = "GEometry E";
+        public static string FalseProcess = "Geçersiz işlem türü";
+        public static string NoIntersection = "Hiçbir kesişim noktası bulunamadı.";
+        public static string SaveAnalysis = "başarıyla keydeildi.";
+        public static string IntersectionResult = "Kesişim sonucu hesaplandı (sadece görsel).";
     }
 }

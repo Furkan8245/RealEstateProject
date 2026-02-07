@@ -16,6 +16,7 @@ namespace Entities.Concrete
         public double Area { get; set; }
         public string OperationType { get; set; }
         public DateTime CreatedDate { get; set; }
+       public string Description { get; set; }
 
     }
 }

@@ -4,73 +4,89 @@ using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
 using Entities.DTOs;
+using Microsoft.IdentityModel.Tokens;
 using NetTopologySuite.Geometries;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Business.Concrete
 {
     public class AreaAnalysisManager : IAnalysisService
     {
         private readonly IAreaAnalysisDal _areaAnalysisDal;
-public AreaAnalysisManager(IAreaAnalysisDal areaAnalysisDal)
+        public AreaAnalysisManager(IAreaAnalysisDal areaAnalysisDal)
         {
             _areaAnalysisDal = areaAnalysisDal;
         }
 
         public IDataResult<AreaAnalysis> CalculateAndSave(AreaAnalysisDto areaAnalysisDto)
         {
-            Geometry resultGeometry = null;
-
-            switch (areaAnalysisDto.OperationType)
+            if (areaAnalysisDto.GeometryA == null || areaAnalysisDto.GeometryB == null ||
+                areaAnalysisDto.GeometryC == null)
+                return new ErrorDataResult<AreaAnalysis>(Messages.MissingProcess);
+            areaAnalysisDto.GeometryA.SRID = areaAnalysisDto.GeometryB.SRID = areaAnalysisDto.GeometryC.SRID = 4326;
+            Geometry resultGeo = null;
+            bool isUnion = false;
+            string name = areaAnalysisDto.Description ?? Messages.AnalysisMessage;
+            switch (areaAnalysisDto.OperationType?.ToLower())
             {
-                case "A ∩ B":
-                    resultGeometry = areaAnalysisDto.GeometryA.Intersection(areaAnalysisDto.GeometryB);
+                case "intersectionab":
+                    resultGeo = areaAnalysisDto.GeometryA.Intersection(areaAnalysisDto.GeometryB);
                     break;
-                case "B ∩ A":
-                    resultGeometry = areaAnalysisDto.GeometryB.Intersection(areaAnalysisDto.GeometryA);
+                case "intersectionba":
+                    resultGeo = areaAnalysisDto.GeometryB.Intersection(areaAnalysisDto.GeometryA);
                     break;
-                case "A ∪ B":
-                    resultGeometry = areaAnalysisDto.GeometryA.Union(areaAnalysisDto.GeometryB);
+                case "unionab":
+                    resultGeo = areaAnalysisDto.GeometryA.Union(areaAnalysisDto.GeometryB);
+                    isUnion = true;
+                    name = Messages.UnionAB;
                     break;
-                case "A ∪ B ∪ C":
-                    var unionAB = areaAnalysisDto.GeometryA.Union(areaAnalysisDto.GeometryB);
-                    resultGeometry = unionAB.Union(areaAnalysisDto.GeometryC);
+                case "unionabc":
+                    resultGeo = areaAnalysisDto.GeometryA.Union(areaAnalysisDto.GeometryB).Union(areaAnalysisDto.GeometryC);
+                    isUnion = true;
+                    name = Messages.UnionABC;
                     break;
                 default:
-                    return new ErrorDataResult<AreaAnalysis>(Messages.OperationTypeArea);
-            }
-            if (resultGeometry == null || resultGeometry.IsEmpty)
-                return new ErrorDataResult<AreaAnalysis>(Messages.AreaProcess);
+                    return new ErrorDataResult<AreaAnalysis>(Messages.FalseProcess);
 
-            var analysisResult = new AreaAnalysis()
+            }
+            if (resultGeo == null || resultGeo.IsEmpty)
+                return new ErrorDataResult<AreaAnalysis>(Messages.NoIntersection);
+            double areaM2 = CalculaRealArea(resultGeo);
+            var analysis = new AreaAnalysis
             {
-                Name = areaAnalysisDto.Description ?? Messages.NewAnalysis,
-                Geometry=resultGeometry,
-                OperationType= areaAnalysisDto.OperationType,
-                Area=resultGeometry.Area,
-                CreatedDate=DateTime.Now
+                Name = name,
+                Geometry = resultGeo,
+                OperationType = areaAnalysisDto.OperationType,
+                Area = Math.Round(areaM2, 2),
+                Description = areaAnalysisDto.Description,
+                CreatedDate = DateTime.UtcNow
             };
-            if (areaAnalysisDto.OperationType.Contains("∪"))
+            if (isUnion)
             {
-                _areaAnalysisDal.Add(analysisResult);
-                return new SuccessDataResult<AreaAnalysis>(analysisResult, Messages.SuccessAnalysis);
-
+                _areaAnalysisDal.Add(analysis);
+                return new SuccessDataResult<AreaAnalysis>(analysis, $"{name}" + Messages.SaveAnalysis);
             }
-            //If intersection (A ∩ B or B ∩ A) sadece sonucu döner,save olmaz
-            return new SuccessDataResult<AreaAnalysis>(analysisResult, Messages.IntersectionNoSave);
+            return new SuccessDataResult<AreaAnalysis>(analysis, Messages.IntersectionResult);
+
+            
+        }
+        private double CalculaRealArea(Geometry geo)
+        {
+            double lat = geo.Centroid.Y;
+            double metersPerDegree = 111319.9;
+            double cosLat = Math.Cos(lat * Math.PI / 180.0);
+            return Math.Abs(geo.Area * Math.Pow(metersPerDegree, 2) * cosLat);
         }
 
-        public IResult Delete(int id)
+
+        public IResult Delete(AreaAnalysisDeleteDto analysisDeleteDto)
         {
-            var value = _areaAnalysisDal.Get(a => a.Id == id);
+            var value = _areaAnalysisDal.Get(a => a.Id == analysisDeleteDto.Id);
             if (value == null)
                 return new ErrorResult(Messages.RecordNotFound);
             _areaAnalysisDal.Delete(value);
             return new SuccessResult(Messages.DeleteAnaliysis);
+
+            
         }
 
         public IDataResult<List<AreaAnalysis>> GetAll()
@@ -88,7 +104,8 @@ public AreaAnalysisManager(IAreaAnalysisDal areaAnalysisDal)
             var value = _areaAnalysisDal.Get(a => a.Id == areaAnalysisUpdateDto.Id);
             if (value == null)
                 return new ErrorResult(Messages.RecordNotFound);
-            value.Name = areaAnalysisUpdateDto.Name;
+            value.Description = areaAnalysisUpdateDto.Description;
+            value.Name= areaAnalysisUpdateDto.Name;
             value.Geometry = areaAnalysisUpdateDto.ResultGeo;
            _areaAnalysisDal.Update(value);
             return new SuccessResult(Messages.AreaAnalysisUpdate);

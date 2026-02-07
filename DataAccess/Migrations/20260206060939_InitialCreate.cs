@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -16,7 +17,24 @@ namespace DataAccess.Migrations
                 .Annotation("Npgsql:PostgresExtension:postgis", ",,");
 
             migrationBuilder.CreateTable(
-                name: "Cities",
+                name: "areaanalyses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Geometry = table.Column<Geometry>(type: "geometry", nullable: false),
+                    Area = table.Column<double>(type: "double precision", nullable: false),
+                    OperationType = table.Column<string>(type: "text", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_areaanalyses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "cities",
                 columns: table => new
                 {
                     CityId = table.Column<int>(type: "integer", nullable: false)
@@ -25,11 +43,11 @@ namespace DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cities", x => x.CityId);
+                    table.PrimaryKey("PK_cities", x => x.CityId);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Districts",
+                name: "districts",
                 columns: table => new
                 {
                     DistrictId = table.Column<int>(type: "integer", nullable: false)
@@ -39,11 +57,11 @@ namespace DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Districts", x => x.DistrictId);
+                    table.PrimaryKey("PK_districts", x => x.DistrictId);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Neighborhoods",
+                name: "neighborhoods",
                 columns: table => new
                 {
                     NeighborhoodId = table.Column<int>(type: "integer", nullable: false)
@@ -53,11 +71,11 @@ namespace DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Neighborhoods", x => x.NeighborhoodId);
+                    table.PrimaryKey("PK_neighborhoods", x => x.NeighborhoodId);
                 });
 
             migrationBuilder.CreateTable(
-                name: "OperationClaims",
+                name: "operationclaims",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -66,11 +84,11 @@ namespace DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OperationClaims", x => x.Id);
+                    table.PrimaryKey("PK_operationclaims", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "PropertyTypes",
+                name: "propertytypes",
                 columns: table => new
                 {
                     PropertyId = table.Column<int>(type: "integer", nullable: false)
@@ -79,11 +97,11 @@ namespace DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PropertyTypes", x => x.PropertyId);
+                    table.PrimaryKey("PK_propertytypes", x => x.PropertyId);
                 });
 
             migrationBuilder.CreateTable(
-                name: "RealEstates",
+                name: "realestates",
                 columns: table => new
                 {
                     RealEstateId = table.Column<int>(type: "integer", nullable: false)
@@ -95,15 +113,15 @@ namespace DataAccess.Migrations
                     NeighborhoodId = table.Column<int>(type: "integer", nullable: false),
                     ParcelNumber = table.Column<string>(type: "text", nullable: false),
                     LotNumber = table.Column<string>(type: "text", nullable: true),
-                    Location = table.Column<Point>(type: "geometry", nullable: false)
+                    Location = table.Column<Point>(type: "geometry(Point,4326)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RealEstates", x => x.RealEstateId);
+                    table.PrimaryKey("PK_realestates", x => x.RealEstateId);
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserOperationClaims",
+                name: "useroperationclaims",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -113,11 +131,11 @@ namespace DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserOperationClaims", x => x.Id);
+                    table.PrimaryKey("PK_useroperationclaims", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "users",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -131,7 +149,7 @@ namespace DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_users", x => x.Id);
                 });
         }
 
@@ -139,28 +157,31 @@ namespace DataAccess.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Cities");
+                name: "areaanalyses");
 
             migrationBuilder.DropTable(
-                name: "Districts");
+                name: "cities");
 
             migrationBuilder.DropTable(
-                name: "Neighborhoods");
+                name: "districts");
 
             migrationBuilder.DropTable(
-                name: "OperationClaims");
+                name: "neighborhoods");
 
             migrationBuilder.DropTable(
-                name: "PropertyTypes");
+                name: "operationclaims");
 
             migrationBuilder.DropTable(
-                name: "RealEstates");
+                name: "propertytypes");
 
             migrationBuilder.DropTable(
-                name: "UserOperationClaims");
+                name: "realestates");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "useroperationclaims");
+
+            migrationBuilder.DropTable(
+                name: "users");
         }
     }
 }

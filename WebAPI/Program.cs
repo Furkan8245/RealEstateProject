@@ -37,6 +37,17 @@ namespace WebAPI
                     };
                 });
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
+
             builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
             builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder => {
@@ -48,13 +59,17 @@ namespace WebAPI
                  .AddJsonOptions(options =>
                  {
                      options.JsonSerializerOptions.Converters.Add(new NetTopologySuite.IO.Converters.GeoJsonConverterFactory());
+
+                     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                     options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
                  });
 
             builder.Services.AddDbContext<RealEstateContext>(options =>
             options.UseNpgsql(
             builder.Configuration.GetConnectionString("DefaultConnection"),
-            x => x.UseNetTopologySuite()));
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            x => x.UseNetTopologySuite() // PostgreSQL tarafýnda NTS desteði
+            ));
+            // Learn more about configuring Swagger/OpenAPI at 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(setup =>
             {
@@ -90,8 +105,11 @@ namespace WebAPI
             }
 
             app.UseHttpsRedirection();
-            app.UseAuthentication();
 
+
+            app.UseCors("AllowAll");
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
