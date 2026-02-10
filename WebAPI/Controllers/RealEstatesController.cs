@@ -79,6 +79,18 @@ namespace WebAPI.Controllers
             }
             return BadRequest(value);
         }
+        [HttpGet("getallbyuserid")]
+        public IActionResult GetAllByUserId(int userId)
+        {
+            // Business katmanındaki servisini çağırıyoruz
+            var result = _realEstateService.GetAllByUserId(userId);
+
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
         [HttpGet("getbydistrict")]
         public IActionResult GetByFilter(int districtId)
         {

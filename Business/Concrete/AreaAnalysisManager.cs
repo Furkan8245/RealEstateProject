@@ -22,12 +22,17 @@ namespace Business.Concrete
             if (areaAnalysisDto.GeometryA == null || areaAnalysisDto.GeometryB == null ||
                 areaAnalysisDto.GeometryC == null)
                 return new ErrorDataResult<AreaAnalysis>(Messages.MissingProcess);
-            areaAnalysisDto.GeometryA.SRID = areaAnalysisDto.GeometryB.SRID = areaAnalysisDto.GeometryC.SRID = 4326;
-            Geometry resultGeo = null;
-            bool isUnion = false;
-            string name = areaAnalysisDto.Description ?? Messages.AnalysisMessage;
+                areaAnalysisDto.GeometryA.SRID = areaAnalysisDto.GeometryB.SRID = areaAnalysisDto.GeometryC.SRID = 4326;
+                Geometry resultGeo = null;
+                bool isUnion = false;
+                string name = areaAnalysisDto.Description ?? Messages.AnalysisMessage;
             switch (areaAnalysisDto.OperationType?.ToLower())
             {
+                case "intersectionabc":
+                    var interAB = areaAnalysisDto.GeometryA.Intersection(areaAnalysisDto.GeometryB);
+                    resultGeo= interAB.Intersection(areaAnalysisDto.GeometryC);
+                    break;
+
                 case "intersectionab":
                     resultGeo = areaAnalysisDto.GeometryA.Intersection(areaAnalysisDto.GeometryB);
                     break;

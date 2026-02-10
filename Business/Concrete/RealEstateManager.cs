@@ -68,8 +68,12 @@ namespace Business.Concrete
             _realEstateDal.Delete(isThere);
             return new SuccessResult(Messages.RealEstateDeleted);
         }
+        public IDataResult<List<RealEstate>> GetAllByUserId(int userId)
+        {
+            
+            return new SuccessDataResult<List<RealEstate>>(_realEstateDal.GetAll(r => r.UserId == userId));
+        }
 
-      
 
         public IDataResult<List<RealEstate>> GetAllByDistrictId(int id)
         {

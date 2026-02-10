@@ -15,6 +15,7 @@ namespace Business.Abstract
         IDataResult<List<RealEstate>> GetAllByNeighborhoodId(int id);
         IDataResult<List<RealEstate>> GetAllByDistrictId(int id);
         IDataResult<RealEstate> GetById(int id);
+        IDataResult<List<RealEstate>> GetAllByUserId(int userId);
 
         IResult Add(RealEstateAddDto realEstateAddDto);
         IResult Update(RealEstateUpdateDto realEstateUpdateDto);
