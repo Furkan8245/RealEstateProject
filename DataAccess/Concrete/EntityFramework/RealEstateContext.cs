@@ -28,6 +28,7 @@ namespace DataAccess.Concrete.EntityFramework
         public DbSet<OperationClaim> OperationClaims { get; set; }
         public DbSet<UserOperationClaim> UserOperationClaims { get; set; }
         public DbSet<AreaAnalysis> AreaAnalyses{ get; set; }
+        public DbSet<AuditLog>AuditLogs { get; set; }
 
 
 

@@ -8,9 +8,7 @@ using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
 using Entities.DTOs;
-using Microsoft.AspNetCore.Authorization;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,122 +18,170 @@ namespace Business.Concrete
     public class RealEstateManager : IRealEstateService
     {
         private readonly IRealEstateDal _realEstateDal;
+        private readonly IAuditLogDal _auditLogDal;
         private readonly GeometryFactory _geometryFactory;
-        public RealEstateManager(IRealEstateDal realEstateDal)
+
+        public RealEstateManager(IRealEstateDal realEstateDal, IAuditLogDal auditLogDal)
         {
             _realEstateDal = realEstateDal;
             _geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+            _auditLogDal = auditLogDal;
         }
 
-        [ValidationAspect(typeof(RealEstateValidator))]
-        [CacheRemoveAspect("IRealEstateService.Get")]
-        public IResult Add(RealEstateAddDto realEstateAddDto)
+
+        [CacheAspect]
+        public IDataResult<List<RealEstate>> GetAll()
         {
-          
-            IResult result = BusinessRules.Run(
-                CheckIfParcelAndIslandExist(realEstateAddDto.LotNumber, realEstateAddDto.ParcelNumber)
-            );
-
-            if (result != null) return result;
-
-            var realEstate = new RealEstate
-            {
-                UserId = realEstateAddDto.OwnerId,
-                CityId = realEstateAddDto.CityId,
-                DistrictId = realEstateAddDto.DistrictId,
-                NeighborhoodId = realEstateAddDto.NeighborhoodId,
-                PropertyId = realEstateAddDto.PropertyTypeId,
-                ParcelNumber = realEstateAddDto.ParcelNumber,
-                LotNumber = realEstateAddDto.LotNumber,
-                Location = _geometryFactory.CreatePoint(new Coordinate(realEstateAddDto.CoordinateX,
-                realEstateAddDto.CoordinateY))
-
-            };
-
-            _realEstateDal.Add(realEstate);
-            return new SuccessResult(Messages.RealEstateAdded);
+            var result = _realEstateDal.GetAll();
+            return new SuccessDataResult<List<RealEstate>>(result, Messages.RealEstateListed);
         }
 
-        [CacheRemoveAspect("IRealEstateService.Get")]
-        public IResult Delete(RealEstateDeleteDto realEstateDeleteDto)
-        {
-            var isThere = _realEstateDal.Get(r => r.RealEstateId == realEstateDeleteDto.Id);
-            if (isThere == null)
-            {
-                return new ErrorResult(Messages.NoRealEstate);
-            }
 
-            _realEstateDal.Delete(isThere);
-            return new SuccessResult(Messages.RealEstateDeleted);
-        }
         public IDataResult<List<RealEstate>> GetAllByUserId(int userId)
         {
-            
-            return new SuccessDataResult<List<RealEstate>>(_realEstateDal.GetAll(r => r.UserId == userId));
+            if (userId <= 0)
+                return new ErrorDataResult<List<RealEstate>>("Geçersiz kullanıcı.");
+
+            var result = _realEstateDal.GetAll(r => r.UserId == userId);
+
+            return new SuccessDataResult<List<RealEstate>>(result, Messages.RealEstateListed);
         }
 
-
-        public IDataResult<List<RealEstate>> GetAllByDistrictId(int id)
+        public IDataResult<List<RealEstate>> GetAllByDistrictId(int districtId)
         {
-            return new SuccessDataResult<List<RealEstate>>(_realEstateDal.GetAll(r => r.DistrictId == id),Messages.RealEstateIdListed);
+            var result = _realEstateDal.GetAll(r => r.DistrictId == districtId);
+
+            return new SuccessDataResult<List<RealEstate>>(result, Messages.RealEstateIdListed);
         }
 
-        public IDataResult<List<RealEstate>> GetAllByNeighborhoodId(int id)
+        public IDataResult<List<RealEstate>> GetAllByNeighborhoodId(int neighborhoodId)
         {
-            return new SuccessDataResult<List<RealEstate>>(_realEstateDal.GetAll(r => r.NeighborhoodId == id),Messages.RealEstateNeighborIdListed);
+            var result = _realEstateDal.GetAll(r => r.NeighborhoodId == neighborhoodId);
+
+            return new SuccessDataResult<List<RealEstate>>(result, Messages.RealEstateNeighborIdListed);
         }
 
         public IDataResult<RealEstate> GetById(int id)
         {
+            if (id <= 0)
+                return new ErrorDataResult<RealEstate>("Geçersiz ID");
+
             var result = _realEstateDal.Get(r => r.RealEstateId == id);
-            if (result == null) return new ErrorDataResult<RealEstate>(Messages.NoRealEstate);
-            return new SuccessDataResult<RealEstate>(result);
+
+            return result == null
+                ? new ErrorDataResult<RealEstate>(Messages.NoRealEstate)
+                : new SuccessDataResult<RealEstate>(result);
         }
 
-        public IResult Update(RealEstateUpdateDto realEstateUpdateDto)
+        // ✅ Add
+        [ValidationAspect(typeof(RealEstateValidator))]
+        [CacheRemoveAspect("IRealEstateService.Get")]
+        public IResult Add(RealEstateAddDto dto)
         {
-            var isThere = _realEstateDal.Get(r => r.RealEstateId == realEstateUpdateDto.Id);
-            if (isThere == null) return new ErrorResult(Messages.NoRealEstateUpdated);
+            IResult ruleResult = BusinessRules.Run(
+                CheckIfParcelAndIslandExist(dto.LotNumber, dto.ParcelNumber)
+            );
 
-            isThere.CityId = realEstateUpdateDto.CityId;
-            isThere.DistrictId = realEstateUpdateDto.DistrictId;
-            isThere.NeighborhoodId = realEstateUpdateDto.NeighborhoodId;
-            isThere.ParcelNumber = realEstateUpdateDto.ParcelNumber;
-            isThere.LotNumber = realEstateUpdateDto.LotNumber;
-            isThere.PropertyId = realEstateUpdateDto.PropertyTypeId;
-            isThere.Location = _geometryFactory.CreatePoint(
-                new Coordinate(realEstateUpdateDto.CoordinateX, realEstateUpdateDto.CoordinateY));
+            if (ruleResult != null)
+                return ruleResult;
 
-            _realEstateDal.Update(isThere);
-            return new SuccessResult(Messages.RealEstateUpdated);
+            var entity = new RealEstate
+            {
+                UserId = dto.OwnerId,
+                CityId = dto.CityId,
+                DistrictId = dto.DistrictId,
+                NeighborhoodId = dto.NeighborhoodId,
+                PropertyId = dto.PropertyTypeId,
+                Area = dto.Area,
+                CityName = dto.CityName,
+                DistrictName = dto.DistrictName,
+                NeighborhoodName = dto.NeighborhoodName,
+                CreatedDate = dto.CreatedDate.ToUniversalTime(),
+                PropertyName = dto.PropertyName,
+                ParcelNumber = dto.ParcelNumber,
+                LotNumber = dto.LotNumber,
+                Location = _geometryFactory.CreatePoint(
+                    new Coordinate(dto.CoordinateX, dto.CoordinateY))
+
+                
+            };
+
+            _realEstateDal.Add(entity);
+
+            _auditLogDal.Add(new AuditLog
+            {
+                UserId = dto.OwnerId,
+                OperationType = "Taşınmaz Ekleme",
+                Status = "Success",
+                Description=$"{dto.CityName} / {dto.DistrictName} adresine eklendi.",
+                TimeStamp = DateTime.Now.ToUniversalTime(),
+                UserIp="127.0.0.1"
+            });
+
+            return new SuccessResult(Messages.RealEstateAdded);
         }
 
-        // Filtreleme mantığı 
+
+        [CacheRemoveAspect("IRealEstateService.Get")]
+        public IResult Update(RealEstateUpdateDto dto)
+        {
+            
+                var entity = _realEstateDal.Get(r => r.RealEstateId == dto.Id);
+
+                if (entity == null)
+                    return new ErrorResult(Messages.NoRealEstateUpdated);
+
+                entity.CityId = dto.CityId;
+                entity.DistrictId = dto.DistrictId;
+                entity.NeighborhoodId = dto.NeighborhoodId;
+                entity.ParcelNumber = dto.ParcelNumber;
+                entity.LotNumber = dto.LotNumber;
+                entity.PropertyId = dto.PropertyTypeId;
+                entity.Area = dto.Area;
+                entity.CityName = dto.CityName;
+                entity.DistrictName = dto.DistrictName;
+                entity.NeighborhoodName = dto.NeighborhoodName;
+                entity.Location = _geometryFactory.CreatePoint(
+                new Coordinate(dto.CoordinateX, dto.CoordinateY));
+
+                _realEstateDal.Update(entity);
+
+                return new SuccessResult(Messages.RealEstateUpdated);  
+        }
+        [CacheRemoveAspect("IRealEstateService.Get")]
+        public IResult Delete(RealEstateDeleteDto dto)
+        {
+            var entity = _realEstateDal.Get(r => r.RealEstateId == dto.Id);
+
+            if (entity == null)
+                return new ErrorResult(Messages.NoRealEstate);
+
+            _realEstateDal.Delete(entity);
+
+            return new SuccessResult(Messages.RealEstateDeleted);
+        }
+
+ 
         public IDataResult<List<RealEstate>> GetByFilter(RealEstateFilterDto filter)
         {
             var result = _realEstateDal.GetAll(r =>
                 (filter.CityId == 0 || r.CityId == filter.CityId) &&
                 (string.IsNullOrEmpty(filter.ParcelNumber) || r.ParcelNumber == filter.ParcelNumber)
             );
+
             return new SuccessDataResult<List<RealEstate>>(result);
         }
 
-//Business Rules 
+
         private IResult CheckIfParcelAndIslandExist(string lot, string parcel)
         {
-            var result = _realEstateDal.GetAll(r => r.LotNumber == lot && r.ParcelNumber == parcel).Any();
-            if (result) return new ErrorResult(Messages.IsThereParcelAndLotNumber);
-            return new SuccessResult();
-        }
-        [CacheAspect]
-        public IDataResult<List<RealEstate>> GetAllByRole(int userId, string role)
-        {
-            if (role=="Admin")
-            {
-                return new SuccessDataResult<List<RealEstate>>(_realEstateDal.GetAll(), Messages.RealEstateListed);
-            }
-            var result =_realEstateDal.GetAll(r=>r.UserId==userId);
-                return new SuccessDataResult<List<RealEstate>>(result, Messages.RealEstateListed);
+            bool exists = _realEstateDal
+                .GetAll(r => r.LotNumber == lot && r.ParcelNumber == parcel)
+                .Any();
+
+            return exists
+                ? new ErrorResult(Messages.IsThereParcelAndLotNumber)
+                : new SuccessResult();
         }
     }
 }

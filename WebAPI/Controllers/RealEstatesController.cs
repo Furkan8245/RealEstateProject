@@ -1,6 +1,6 @@
 ﻿using Business.Abstract;
 using Entities.DTOs;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -8,6 +8,7 @@ namespace WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class RealEstatesController : ControllerBase
     {
         private readonly IRealEstateService _realEstateService;
@@ -16,92 +17,95 @@ namespace WebAPI.Controllers
         {
             _realEstateService = realEstateService;
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("getall")]
-        public IActionResult GetAllByRole()
+        public IActionResult GetAll()
         {
-            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            var role= User.FindFirst(ClaimTypes.Role)?.Value;
-            var value=_realEstateService.GetAllByRole(userId,role);
-            if (value.Success)
-            {
-                return Ok(value);
-            }
-            return BadRequest(value);
+            var result = _realEstateService.GetAll();
+            return result.Success ? Ok(result) : BadRequest(result);
         }
+
+        [HttpGet("getmine")]
+        public IActionResult GetMine()
+        {
+            int userId = GetUserIdFromToken();
+            var result = _realEstateService.GetAllByUserId(userId);
+
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
         [HttpGet("getbyid")]
         public IActionResult GetById(int id)
         {
-            var value = _realEstateService.GetById(id);
-            if (value.Success)
-            {
-                return Ok(value);
-            }
-            return BadRequest(value);
+            if (id <= 0)
+                return BadRequest("Geçersiz ID");
+
+            var result = _realEstateService.GetById(id);
+
+            return result.Success ? Ok(result) : BadRequest(result);
         }
+
         [HttpPost("add")]
-        public IActionResult Add(RealEstateAddDto realEstateAddDto)
+        public IActionResult Add([FromBody] RealEstateAddDto dto)
         {
-            var value = _realEstateService.Add(realEstateAddDto);
-            if (value.Success)
-            {
-                return Ok(value);
-            }
-            return BadRequest(value);
+            if (dto == null)
+                return BadRequest("Boş veri gönderilemez.");
+
+            var result = _realEstateService.Add(dto);
+
+            return result.Success ? Ok(result) : BadRequest(result);
         }
-        [HttpPost("update")]
-        public IActionResult Update(RealEstateUpdateDto realEstateUpdateDto)
+
+        [HttpPut("update")]
+        public IActionResult Update([FromBody] RealEstateUpdateDto dto)
         {
-            var value = _realEstateService.Update(realEstateUpdateDto);
-            if (value.Success)
-            {
-                return Ok(value);
-            }
-            return BadRequest(value);
+            if (dto == null)
+                return BadRequest("Boş veri gönderilemez.");
+
+            var result = _realEstateService.Update(dto);
+
+            return result.Success ? Ok(result) : BadRequest(result);
         }
-        [HttpPost("delete")]
-        public IActionResult Delete(RealEstateDeleteDto realEstateDeleteDto)
+
+        [HttpDelete("delete")]
+        public IActionResult Delete([FromBody] RealEstateDeleteDto dto)
         {
-            var value = _realEstateService.Delete(realEstateDeleteDto);
-            if (value.Success)
-            {
-                return Ok(value);
-            }
-            return BadRequest(value);
+            if (dto == null)
+                return BadRequest("Boş veri gönderilemez.");
+
+            var result = _realEstateService.Delete(dto);
+
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpGet("getbyfilter")]
-        public IActionResult GetByFilter([FromQuery] RealEstateFilterDto realEstateFilterDto)
+        public IActionResult GetByFilter([FromQuery] RealEstateFilterDto filterDto)
         {
-            var value = _realEstateService.GetByFilter(realEstateFilterDto);
-            if (value.Success)
-            {
-                return Ok(value);
-            }
-            return BadRequest(value);
-        }
-        [HttpGet("getallbyuserid")]
-        public IActionResult GetAllByUserId(int userId)
-        {
-            // Business katmanındaki servisini çağırıyoruz
-            var result = _realEstateService.GetAllByUserId(userId);
+            var result = _realEstateService.GetByFilter(filterDto);
 
-            if (result.Success)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
+
         [HttpGet("getbydistrict")]
-        public IActionResult GetByFilter(int districtId)
+        public IActionResult GetByDistrict(int districtId)
         {
-            var value = _realEstateService.GetAllByDistrictId(districtId);
-            if (value.Success)
-            {
-                return Ok(value);
-            }
-            return BadRequest(value);
+            if (districtId <= 0)
+                return BadRequest("Geçersiz districtId");
+
+            var result = _realEstateService.GetAllByDistrictId(districtId);
+
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
+        private int GetUserIdFromToken()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
+            if (userIdClaim == null)
+                throw new Exception("Token içinde UserId bulunamadı.");
+
+            return int.Parse(userIdClaim.Value);
+        }
     }
 }

@@ -10,6 +10,7 @@ namespace Business.Abstract
 {
     public interface IAuditLogService
     {
+        IDataResult<List<AuditLog>> GetAll();
         IResult Add(AuditLog auditLog);
         IDataResult<List<AuditLog>> GetFilteredLogs(int? userId, string status, string operationType);
     }

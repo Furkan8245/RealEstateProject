@@ -26,6 +26,11 @@ namespace Business.Concrete
             return new SuccessResult();
         }
 
+        public IDataResult<List<AuditLog>> GetAll()
+        {
+            return new SuccessDataResult<List<AuditLog>>(_auditLogDal.GetAll().OrderByDescending(x => x.TimeStamp).ToList());
+        }
+
         public IDataResult<List<AuditLog>> GetFilteredLogs(int? userId, string status, string operationType)
         {
             var result = _auditLogDal.GetAll(l => !userId.HasValue || l.UserId == userId

@@ -15,9 +15,14 @@ namespace Entities.DTOs
         public int NeighborhoodId { get; set; }
         public string ParcelNumber { get; set; } // Ada
         public string LotNumber { get; set; }    // Parsel
-        public string Address { get; set; }
+        public string CityName { get; set; }
+        public string DistrictName{ get; set; }
+        public string NeighborhoodName{ get; set; }
         public int PropertyTypeId { get; set; }
-        public int CoordinateX { get; set; }
-        public int CoordinateY { get; set; }
+        public double CoordinateX { get; set; }
+        public double CoordinateY { get; set; }
+        public double Area { get; set; }
+        public string PropertyName { get; set; }
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     }
 }

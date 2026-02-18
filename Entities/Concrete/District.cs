@@ -10,6 +10,7 @@ namespace Entities.Concrete
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int DistrictId { get; set; }
         public string DistrictName { get; set; } = string.Empty;
+
         public int CityId { get; set; }
 
 
