@@ -8,7 +8,11 @@ namespace Entities.Concrete
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("id")]
         public int CityId { get; set; }
+        [Column("name")]
         public string CityName { get; set; } = string.Empty;
+        [Column("plate_number")]
+        public int PlateNumber { get; set; }
     }
 }

@@ -5,7 +5,7 @@ namespace Entities.DTOs
     public class RealEstateUpdateDto:IDto
     {
         public int Id { get; set; }
-        public int CityId { get; set; }
+        public int CityId { get; set; } 
         public int DistrictId { get; set; }
         public int NeighborhoodId { get; set; }
         public string ParcelNumber { get; set; } // Ada
