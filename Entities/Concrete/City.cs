@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Entities.Concrete
 {
+    [Table("cities")]
     public class City:IEntity
     {
         [Key]
